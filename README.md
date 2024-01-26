@@ -1,21 +1,21 @@
-Домашнее задание: работа с mdadm
+Р”РѕРјР°С€РЅРµРµ Р·Р°РґР°РЅРёРµ: СЂР°Р±РѕС‚Р° СЃ mdadm
 
-Задание:
-• добавить в Vagrantfile еще дисков
-• собрать R0/R5/R10 на выбор
-• прописать собранный рейд в конф, чтобы рейд собирался при загрузке
-• сломать/починить raid 
-• создать GPT раздел и 5 партиций и смонтировать их на диск.
+Р—Р°РґР°РЅРёРµ:
+вЂў РґРѕР±Р°РІРёС‚СЊ РІ Vagrantfile РµС‰Рµ РґРёСЃРєРѕРІ
+вЂў СЃРѕР±СЂР°С‚СЊ R0/R5/R10 РЅР° РІС‹Р±РѕСЂ
+вЂў РїСЂРѕРїРёСЃР°С‚СЊ СЃРѕР±СЂР°РЅРЅС‹Р№ СЂРµР№Рґ РІ РєРѕРЅС„, С‡С‚РѕР±С‹ СЂРµР№Рґ СЃРѕР±РёСЂР°Р»СЃСЏ РїСЂРё Р·Р°РіСЂСѓР·РєРµ
+вЂў СЃР»РѕРјР°С‚СЊ/РїРѕС‡РёРЅРёС‚СЊ raid 
+вЂў СЃРѕР·РґР°С‚СЊ GPT СЂР°Р·РґРµР» Рё 5 РїР°СЂС‚РёС†РёР№ Рё СЃРјРѕРЅС‚РёСЂРѕРІР°С‚СЊ РёС… РЅР° РґРёСЃРє.
 
-1) Создаём виртальную машину:
+1) РЎРѕР·РґР°С‘Рј РІРёСЂС‚Р°Р»СЊРЅСѓСЋ РјР°С€РёРЅСѓ:
 vagrant up
 
-2) Подключаемся к ВМ:
+2) РџРѕРґРєР»СЋС‡Р°РµРјСЃСЏ Рє Р’Рњ:
 vagrant ssh
 
-3) Посмотрим какие блочные устройства у нас есть:
+3) РџРѕСЃРјРѕС‚СЂРёРј РєР°РєРёРµ Р±Р»РѕС‡РЅС‹Рµ СѓСЃС‚СЂРѕР№СЃС‚РІР° Сѓ РЅР°СЃ РµСЃС‚СЊ:
 
-А) [vagrant@otuslinux ~]$ sudo fdisk -l
+Рђ) [vagrant@otuslinux ~]$ sudo fdisk -l
 Disk /dev/sda: 128 GiB, 137438953472 bytes, 268435456 sectors
 Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
@@ -89,7 +89,7 @@ Units: sectors of 1 * 512 = 512 bytes
 Sector size (logical/physical): 512 bytes / 512 bytes
 I/O size (minimum/optimal): 512 bytes / 512 bytes
 
-Б)[vagrant@otuslinux ~]$ lsblk
+Р‘)[vagrant@otuslinux ~]$ lsblk
 NAME                 MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
 sda                    8:0    0  128G  0 disk
 |-sda1                 8:1    0    1G  0 part /boot
@@ -101,21 +101,21 @@ sdc                    8:32   0  250M  0 disk
 sdd                    8:48   0  250M  0 disk
 sde                    8:64   0  250M  0 disk
 
-В)[vagrant@otuslinux ~]$ lsscsi
+Р’)[vagrant@otuslinux ~]$ lsscsi
 [2:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sda
 [3:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdb
 [4:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdc
 [5:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sdd
 [6:0:0:0]    disk    ATA      VBOX HARDDISK    1.0   /dev/sde
 
-4) Занулим суперблоки:
+4) Р—Р°РЅСѓР»РёРј СЃСѓРїРµСЂР±Р»РѕРєРё:
 [vagrant@otuslinux ~]$ sudo mdadm --zero-superblock --force /dev/sd{b,c,d,e}
 mdadm: Unrecognised md component device - /dev/sdb
 mdadm: Unrecognised md component device - /dev/sdc
 mdadm: Unrecognised md component device - /dev/sdd
 mdadm: Unrecognised md component device - /dev/sde
 
-5) Создадим raid 5 из 4х дисков:
+5) РЎРѕР·РґР°РґРёРј raid 5 РёР· 4С… РґРёСЃРєРѕРІ:
 [vagrant@otuslinux ~]$ sudo mdadm --create --verbose /dev/md0 -l 5 -n 4 /dev/sd{b,c,d,e}
 mdadm: layout defaults to left-symmetric
 mdadm: layout defaults to left-symmetric
@@ -124,7 +124,7 @@ mdadm: size set to 253952K
 mdadm: Defaulting to version 1.2 metadata
 mdadm: array /dev/md0 started.
 
-6) Проверим, что RAID собрался нормально:
+6) РџСЂРѕРІРµСЂРёРј, С‡С‚Рѕ RAID СЃРѕР±СЂР°Р»СЃСЏ РЅРѕСЂРјР°Р»СЊРЅРѕ:
 a) [vagrant@otuslinux ~]$ cat /proc/mdstat
 Personalities : [raid6] [raid5] [raid4]
 md0 : active raid5 sde[4] sdd[2] sdc[1] sdb[0]
@@ -165,18 +165,18 @@ Consistency Policy : resync
        2       8       48        2      active sync   /dev/sdd
        4       8       64        3      active sync   /dev/sde
 
-7) Информация о raid:
+7) РРЅС„РѕСЂРјР°С†РёСЏ Рѕ raid:
 [vagrant@otuslinux ~]$ sudo mdadm --detail --scan --verbose
 ARRAY /dev/md0 level=raid5 num-devices=4 metadata=1.2 name=otuslinux:0 UUID=01c8e516:3b1e0d8b:5a22a52b:136b01f3
    devices=/dev/sdb,/dev/sdc,/dev/sdd,/dev/sde
 
-8) mdadm.conf во вложении
+8) mdadm.conf РІРѕ РІР»РѕР¶РµРЅРёРё
 
-9) "Фейлим" диск
+9) "Р¤РµР№Р»РёРј" РґРёСЃРє
 [vagrant@otuslinux raid]$ sudo mdadm /dev/md0 --fail /dev/sdd
 mdadm: set /dev/sdd faulty in /dev/md0
 
-10) Информация о RAID:
+10) РРЅС„РѕСЂРјР°С†РёСЏ Рѕ RAID:
 
 a) [vagrant@otuslinux raid]$ cat /proc/mdstat
 Personalities : [raid6] [raid5] [raid4]
@@ -220,15 +220,15 @@ Consistency Policy : resync
 
        2       8       48        -      faulty   /dev/sdd
 
-11) Удалим сломанный диск из массива:
+11) РЈРґР°Р»РёРј СЃР»РѕРјР°РЅРЅС‹Р№ РґРёСЃРє РёР· РјР°СЃСЃРёРІР°:
 [vagrant@otuslinux raid]$ sudo mdadm /dev/md0 --remove /dev/sdd
 mdadm: hot removed /dev/sdd from /dev/md0
 
-12) Добавляем новый диск:
+12) Р”РѕР±Р°РІР»СЏРµРј РЅРѕРІС‹Р№ РґРёСЃРє:
 [vagrant@otuslinux raid]$ sudo mdadm /dev/md0 --add /dev/sdd
 mdadm: added /dev/sdd
 
-13) Статус RAID:
+13) РЎС‚Р°С‚СѓСЃ RAID:
 [vagrant@otuslinux raid]$  cat /proc/mdstat
 Personalities : [raid6] [raid5] [raid4]
 md0 : active raid5 sdd[5] sde[4] sdc[1] sdb[0]
@@ -236,10 +236,10 @@ md0 : active raid5 sdd[5] sde[4] sdc[1] sdb[0]
 
 unused devices: <none>
 
-14) Создаем раздел GPT на RAID:
+14) РЎРѕР·РґР°РµРј СЂР°Р·РґРµР» GPT РЅР° RAID:
 [vagrant@otuslinux raid]$ sudo parted -s /dev/md0 mklabel gpt
 
-15) Создаем партиции:
+15) РЎРѕР·РґР°РµРј РїР°СЂС‚РёС†РёРё:
 [vagrant@otuslinux raid]$ sudo parted /dev/md0 mkpart primary ext4 0% 30%
 Information: You may need to update /etc/fstab.
 
@@ -252,7 +252,7 @@ Information: You may need to update /etc/fstab.
 [vagrant@otuslinux raid]$ sudo parted /dev/md0 mkpart primary ext4 80% 100%
 Information: You may need to update /etc/fstab.
 
-16) Создадим ФС:
+16) РЎРѕР·РґР°РґРёРј Р¤РЎ:
 [vagrant@otuslinux raid]$ sudo parted /dev/md0 mkpart primary ext4 0% 30%
 Information: You may need to update /etc/fstab.
 
@@ -265,7 +265,6 @@ Information: You may need to update /etc/fstab.
 [vagrant@otuslinux raid]$ sudo parted /dev/md0 mkpart primary ext4 80% 100%
 Information: You may need to update /etc/fstab.
 
-[vagrant@otuslinux raid]$ ^C
 [vagrant@otuslinux raid]$ for i in $(seq 1 5); do sudo mkfs.ext4 /dev/md0p$i; done
 mke2fs 1.45.6 (20-Mar-2020)
 Creating filesystem with 227328 1k blocks and 56896 inodes
@@ -314,12 +313,12 @@ Writing superblocks and filesystem accounting information: done
 mke2fs 1.45.6 (20-Mar-2020)
 The file /dev/md0p5 does not exist and no size was specified.
 
-17) Монтируем по каталогам:
+17) РњРѕРЅС‚РёСЂСѓРµРј РїРѕ РєР°С‚Р°Р»РѕРіР°Рј:
 [vagrant@otuslinux raid]$ sudo mkdir -p /raid/part{1,2,3,4}
 
 [vagrant@otuslinux raid]$ for i in $(seq 1 4); do sudo mount /dev/md0p$i /raid/part$i; done
 
-18) Результат:
+18) Р РµР·СѓР»СЊС‚Р°С‚:
 [vagrant@otuslinux raid]$ lsblk
 NAME                 MAJ:MIN RM   SIZE RO TYPE  MOUNTPOINT
 sda                    8:0    0   128G  0 disk
@@ -351,18 +350,3 @@ sde                    8:64   0   250M  0 disk
   |-md0p2            259:1    0 223.5M  0 md    /raid/part2
   |-md0p3            259:2    0 148.5M  0 md    /raid/part3
   `-md0p4            259:3    0   147M  0 md    /raid/part4
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
